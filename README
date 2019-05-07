@@ -3,6 +3,9 @@ README
 Created by M. van Beekveld - mcbeekveld@gmail.com
 For any errors / questions, don't hesitate to send me an email
 
+IMPORTANT!!
+Keep the google docs up to date! Then we know who generates what and where it is stored. You can find it https://docs.google.com/document/d/1N1yetfbXXnAqNb1CIT-ajIKh1EQW2GB8N4Z9HrMAREQ/edit?usp=sharing
+
 Usage:
 1. Download and install Madgraph - our current version is 2.6.3.2
 2. Install pythia and delphes within Madgraph
@@ -13,12 +16,14 @@ Usage:
 6. Once root files are generated, convert to CSV with file convert_csv.cc in the UTILITIES directory. 
 This requires root to be installed. Instructions on usage are in the file convert_csv.cc.
 It creates CSV files with variable line lengths (see below). If this is unwanted, use fixed_length.py to create a csv file with a fixed object length. Instructions on this file are in fixed_length.py (in dir UTILITIES). 
-7. CSV are in directory CSV. These are files sorted to the event that it corresponds to. Each file contains combined root files of the same type of event, generated with a seed within mad graph that is in the line ===seed number===. The seed should be different for every file, otherwise the events may not be combined. NOTE THAT SOME OF THE SEEDS ARE INDEED THE SAME, so take care in combining several events! The computed xsec is also given in this line (in pb), as is its saving location.
 
-The format of the events are:
+The format of CSV files are:
 event weight; MET; METphi; object1, pt1, eta1, phi1; object2, pt2, etc.
 The object types are j (jet) b (bjet) e- (electron) e+ (positron) mu- (muon) mu+ (antimuon) a (photon).  
 The event weight is defined as total xsec/#generated events in a single run. So if you use several runs (separated by the ==== lines), also divide by the number of runs you have used to make the weights add up to the total xsec. 
+
+------------------
+
 Note that xsec*luminosity = # events. So to know how many events one needs to take from each signal file, one needs to add them with the correct weight. A simple pseudocode that does this for you would be:
 
 out = commands.getoutput("ls *") #location of your files
@@ -29,7 +34,7 @@ backtypes = {'4top':('p_p_to_t_t~_t_t~',0.0096),'single_top':("p_p_to_t_j",130),
 for key, values in backtypes.items():
         backtypes.update({key:(values[0],values[1],int(1000*values[1]*lumni))})
 
-#way to select data, one can rewrite this to their own needs
+#way to select data, very simple and not sufficient snippet, one can rewrite this to their own needs
 i = 0
 arrayofarray = []
 for key, values in backtypes.items():
@@ -48,106 +53,3 @@ for key, values in backtypes.items():
         arrayofarray.append(nlines)
 
 -------------------------------------
-
-Below is a summary of all generated SM events. The name of the events are given first, then the MG commands used to generate the events and finally the total number of events + the (matched) cross sections computed by MG+pythia+delphes (in pb). The names of the events correspond with the names of the files in the directory CSV. 
-
-=========================
-4top
- p p > t t~ t t~@0
-Total number of events: 399999, variation in cross section: 0.00964996-0.00968584
-=========================
-ttbarGam
- p p > t t~ a @0 + p p > t t~ a j @1
-Total number of events: 295489, variation in cross section: 1.545666227-1.579441
-=========================
-ttbarHiggs
- p p > t t~ h @0 + p p > t t~ h j @1
-Total number of events: 423630, variation in cross section: 0.45681409215-0.46579771925
-=========================
-ttbarW
- p p > t t~ w @0
-Total number of events: 279365, variation in cross section: 0.34959-0.35029
-=========================
-ttbarWW
- p p > t t~ w w @0
-Total number of events: 150000, variation in cross section: 0.0085169756-0.0085236305
-=========================
-ttbarZ
- p p > t t~ z @0
-Total number of events: 300000, variation in cross section: 0.5870197-0.58808628
-=========================
-Zee_jets
- p p > e+ e- @0 + p p > e+ e- j @1 + p p > e+ e- j j @2
-Total number of events: 1147044, variation in cross section: 829.450152956-859.8705
-=========================
-Zmumu_jets
- p p > mu+ mu- @0 + p p > mu+ mu- j @1 + p p > mu+ mu- j j @2
-Total number of events: 1077156, variation in cross section: 829.450152956-862.0866
-=========================
-atop
- p p > t a j@1 + p p > t a j j@2
-Total number of events: 244824, variation in cross section: 0.507155951-0.51062095965
-=========================
-atopbar
- p p > t~ a j@1 + p p > t~ a j j@2
-Total number of events: 277049, variation in cross section: 0.269479339575-0.361043847725
-=========================
-gam_jets
- p p > a j @0 + p p > a j j @1
-Total number of events: 1367519, variation in cross section: 72053.3602775-81469.06
-=========================
-ttbar_jets
- p p > t t~ @0 + p p > t t~ j @1 + p p > t t~ j j @2
-Total number of events: (1263025+)=2174377, variation in cross section: 522.925204672-542.959116975
-=========================
-Wene_jets
- p p > eall veall @0 + p p > eall veall j @1 + p p > eall veall j j @2
-Total number of events: 1448107, variation in cross section: 10138.707606-10237.8323843
-=========================
-Wmune_jets
- p p > muall vmall @0 + p p > muall vmall j @1 + p p > muall vmall j j @2
-Total number of events: 1164970, variation in cross section: 10138.776131-10207.579934
-=========================
-Wtaune_jets
- p p > taall vtall @0 + p p > taall vtall j @1 + p p > taall vtall j j @2
-Total number of events: 2166299, variation in cross section: 9879.7993365-10233.3243638
-=========================
-Ztautau_jets
- p p > ta+ ta- @0 + p p > ta+ ta- j @1 + p p > ta+ ta- j j @2
-Total number of events: 2015568, variation in cross section: 845.66905025-860.069122475
-=========================
-ztopbar
- p p > t~ z j@1 + p p > t~ z j j@2
-Total number of events: 385786, variation in cross section: 0.207814-0.21040362555
-=========================
-zw_jets
- p p > w z @0 + p p > w z j @1 + p p > w z j j @2
-Total number of events: 348409, variation in cross section: 31.032522454-32.32483
-=========================
-zz_jets
- p p > z z @0 + p p > z z j @1 + p p > z z j j @2
-Total number of events: 900096, variation in cross section: 10.1088949297-10.2860601765
-=========================
-wmintop_chan
- p p > b t~ @0
-Total number of events: 500000, variation in cross section: 1.9687-1.9746
-=========================
-wplustop_chan
- p p > t b~ @0
-Total number of events: 550000, variation in cross section: 3.6515-3.6619
-=========================
-wt
- p p > t w @0 + p p > t w j@1 + p p > t w j j@2
-Total number of events: 439576, variation in cross section: 475.0098-563.614057525
-=========================
-wtbar
- p p > t~ w @0 + p p > t~ w j@1 + p p > t~ w j j@2
-Total number of events: 469317, variation in cross section: 475.6169-562.812966425
-=========================
-single_top
- p p > t~ j @0 + p p > t~ j j@1 + p p > t~ j j j @2
-Total number of events: 2695625, variation in cross section: 249.8086642-280.7076355
-=========================
-ww
- p p > w- w+ @0 + p p > w- w+ j @1 + p p > w- w+ j j @2
-Total number of events: 895830, variation in cross section: 494.412291975-498.8041844
