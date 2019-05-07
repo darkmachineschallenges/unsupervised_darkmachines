@@ -27,11 +27,11 @@ xqcut=-1
 pythiaprocess = ""
 #metmin
 metmin=0.
-possibilities=["QCD","z_jets","znuall_jets","w_jets","Wene_jets","Wmune_jets","Wtaune_jets", "Zee_jets","Zmumu_jets","Ztautau_jets","gam_jets","4top","ttbarHiggs",
+possibilities=["QCD","z_hadrons_jets","w_hadrons_jets","znuall_jets","Wene_jets","Wmune_jets","Wtaune_jets", "Zee_jets","Zmumu_jets","Ztautau_jets","gam_jets","4top","ttbarHiggs",
 "ttbarGam","ttbarZ","ttbarW","ttbarWW","ttbar_jets","single_top","single_topbar","wtop","wtopbar",
 "ztop","ztopbar","atop","atopbar","zz_jets","zw_jets","ww_jets"]
 event_number = str(sys.argv[1])
-
+madspin = 0
 
 if event_number not in possibilities:
 	print "Wrong event indicated!:"+event_number
@@ -40,7 +40,7 @@ if event_number not in possibilities:
 	print "for SUSY processes, use susycommands.py"
 	exit()
 	
-# QCD DOES NOT WORK
+	
 if event_number == "QCD":
     mgproc="""generate p p > j j QED=2 @0
 add process p p > j j j @1
@@ -49,6 +49,7 @@ add process p p > j j j j @2
     name='multijets'
     nJetMax=2
 # z > nubar nu + jets
+
 if event_number == "znuall_jets":
     mgproc="""generate p p > nuall nuall @0
 add process p p > nuall nuall j @1
@@ -58,22 +59,24 @@ add process p p > nuall nuall j j @2
     nJetMax=2
 
 # z + jets
-if event_number == "z_jets":
+if event_number == "z_hadrons_jets":
     mgproc="""generate p p > z @0
 add process p p > z j @1
 add process p p > z j j @2
 """
-    name='z_jets'
+    name='z_hadrons_jets'
     nJetMax=2
+    madspin = 1
 
 
-if event_number == "w_jets":
+if event_number == "w_hadrons_jets":
     mgproc="""generate p p > w @0
 add process p p > w j @1
 add process p p > w j j @2
 """
-    name='w_jets'
+    name='w_hadrons_jets'
     nJetMax=2
+    madspin = 1
         
     
 if event_number == "Wene_jets":
@@ -351,11 +354,18 @@ fcard.write("""launch """+name+"""
 shower=Pythia8
 detector=Delphes
 analysis=off
-0
+""")
+if madspin == 1:
+	fcard.write("""madspin=on
+	""")
+fcard.write("""0
 run_card_modified_"""+event_number+""".dat
 pythia8_card_"""+event_number+""".dat
 delphes_card_ATLAS.dat
 """)
+if madspin == 1:
+	fcard.write("""madspin_hadrons.dat
+	""")
 	
 fcard.close()
 if(segfault == True):
