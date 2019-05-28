@@ -21,17 +21,17 @@ nJetMax=4
 # some processes cannot be matched. Madgraph developers know this and are working to solve the problem
 # for now, just use LO without extra jet matrix element
 segfault = False
-# let internal madgraph find ideal xqcut
-xqcut=-1
+# default/average value
+xqcut=20
 # pythiaprocess only necessary for CKKW matching, we don't use that now. 
 pythiaprocess = ""
 #metmin
 metmin=0.
-possibilities=["QCD","z_hadrons_jets","w_hadrons_jets","znuall_jets","Wene_jets","Wmune_jets","Wtaune_jets", "Zee_jets","Zmumu_jets","Ztautau_jets","gam_jets","4top","ttbarHiggs",
+possibilities=["2jets","3jets","4jets","njets","z_jets","znuall_jets","w_jets","Wene_jets","Wmune_jets","Wtaune_jets", "Zee_jets","Zmumu_jets","Ztautau_jets","gam_jets","4top","ttbarHiggs",
 "ttbarGam","ttbarZ","ttbarW","ttbarWW","ttbar_jets","single_top","single_topbar","wtop","wtopbar",
 "ztop","ztopbar","atop","atopbar","zz_jets","zw_jets","ww_jets"]
 event_number = str(sys.argv[1])
-madspin = 0
+
 
 if event_number not in possibilities:
 	print "Wrong event indicated!:"+event_number
@@ -40,16 +40,15 @@ if event_number not in possibilities:
 	print "for SUSY processes, use susycommands.py"
 	exit()
 	
-	
-if event_number == "QCD":
-    mgproc="""generate p p > j j QED=2 @0
+# QCD DOES NOT WORK
+if event_number == "njets":
+    mgproc="""generate p p > j j @0
 add process p p > j j j @1
 add process p p > j j j j @2
 """
-    name='multijets'
+    name='njets'
     nJetMax=2
 # z > nubar nu + jets
-
 if event_number == "znuall_jets":
     mgproc="""generate p p > nuall nuall @0
 add process p p > nuall nuall j @1
@@ -57,26 +56,27 @@ add process p p > nuall nuall j j @2
 """
     name='znuall_jets'
     nJetMax=2
+    xqcut = 10
 
 # z + jets
-if event_number == "z_hadrons_jets":
+if event_number == "z_jets":
     mgproc="""generate p p > z @0
 add process p p > z j @1
 add process p p > z j j @2
 """
-    name='z_hadrons_jets'
+    name='z_jets'
     nJetMax=2
-    madspin = 1
+    xqcut = 10
 
 
-if event_number == "w_hadrons_jets":
+if event_number == "w_jets":
     mgproc="""generate p p > w @0
 add process p p > w j @1
 add process p p > w j j @2
 """
-    name='w_hadrons_jets'
+    name='w_jets'
     nJetMax=2
-    madspin = 1
+    xqcut = 10
         
     
 if event_number == "Wene_jets":
@@ -87,6 +87,7 @@ add process p p > eall veall j j @2
     name='Wene_jets'
     pythiaprocess='pp>LEPTONS,NEUTRINOS'
     nJetMax=2
+    xqcut = 10
 
 # W > mu nu + jets    
 if event_number == "Wmune_jets":
@@ -98,6 +99,7 @@ add process p p > muall vmall j j @2
     name='Wmune_jets'
     pythiaprocess='pp>LEPTONS,NEUTRINOS'
     nJetMax=2
+    xqcut = 10
     
 # W > tau nu + jets
 if event_number == "Wtaune_jets":
@@ -109,6 +111,7 @@ add process p p > taall vtall j j @2
     name='Wtaune_jets'
     pythiaprocess='pp>LEPTONS,NEUTRINOS'
     nJetMax=2
+    xqcut = 10
 #Z / gam -> ee + jets
 if event_number == "Zee_jets":
     mgproc="""generate p p > e+ e- @0
@@ -118,6 +121,7 @@ add process p p > e+ e- j j @2
     name=event_number 
     pythiaprocess='pp>e+e-'
     nJetMax=2
+    xqcut = 10
 #Z / gam -> mu + jets
 if event_number == "Zmumu_jets":
     mgproc="""generate p p > mu+ mu- @0
@@ -127,6 +131,7 @@ add process p p > mu+ mu- j j @2
     name=event_number 
     pythiaprocess='pp>mu+mu-'
     nJetMax=2
+    xqcut = 10
 #Z / gam -> tautau + jets
 if event_number == "Ztautau_jets":
     mgproc="""generate p p > ta+ ta- @0
@@ -137,6 +142,7 @@ add process p p > ta+ ta- j j @2
     
     pythiaprocess='pp>ta+ta-'
     nJetMax=2
+    xqcut = 10
     
 #gam + jets
 if event_number == "gam_jets":
@@ -354,18 +360,11 @@ fcard.write("""launch """+name+"""
 shower=Pythia8
 detector=Delphes
 analysis=off
-""")
-if madspin == 1:
-	fcard.write("""madspin=on
-	""")
-fcard.write("""0
+0
 run_card_modified_"""+event_number+""".dat
 pythia8_card_"""+event_number+""".dat
 delphes_card_ATLAS.dat
 """)
-if madspin == 1:
-	fcard.write("""madspin_hadrons.dat
-	""")
 	
 fcard.close()
 if(segfault == True):
@@ -383,6 +382,8 @@ for line in fcard1:
 		fcard.write("     "+str(beamenergy/2.)+"     = ebeam2  ! beam 2 total energy in GeV \n")
 	elif "ickkw            ! 0 no matching, 1 MLM" in line:
 		fcard.write(" "+str(ickkw)+" = ickkw            ! 0 no matching, 1 MLM \n")
+	elif "xqcut   ! minimum kt jet measure between partons" in line:
+		fcard.write(" "+str(xqcut)+"   = xqcut   ! minimum kt jet measure between partons\n")
 	elif "! minimum missing Et (sum of neutrino's momenta)" in line:
 		fcard.write(" "+str(metmin)+"  = misset    ! minimum missing Et (sum of neutrino's momenta)\n")
 	else:
@@ -395,8 +396,10 @@ fcard = open('pythia8_card_'+event_number+'.dat','w')
 for line in fcard1:
 	if "Main:numberOfEvents" in line:
 		fcard.write("Main:numberOfEvents      = "+str(nevents)+"\n")	
-	elif "JetMatching:nJetMax" in line:
+	elif "JetMatching:nJetMax" in line: #needed for the matching, safe to set it
 		fcard.write("JetMatching:nJetMax  		 = "+str(nJetMax)+"\n")
+	elif "partonlevel:mpi = off" in line: #MPI
+		fcard.write("!partonlevel:mpi = off\n")
 	else:
 		fcard.write(line)
 fcard.close()
