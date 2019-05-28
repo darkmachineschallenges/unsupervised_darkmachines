@@ -38,9 +38,9 @@ Double_t DeltaPhi(Double_t a,Double_t b) {
 
 int convert_to_csv(TString run = "01", TString tagnr = "1", TString event = ""){
 TString fullpath;
-fullpath = "";
+fullpath = "/scratch/mbeekveld/MG5_aMC_v2_6_4/bin/"; //modify this to the location of your files
 fullpath += event;
-fullpath += "/run_";
+fullpath += "/Events/run_";
 fullpath += run;
 fullpath += "/tag_";
 fullpath += tagnr;
@@ -1091,7 +1091,7 @@ for (Long64_t jentry = 0; jentry < fChain->GetEntries(); jentry++)
 					}
 			for (int objects = 0; objects < Photon_size; objects ++)
 					{
-						cout << "g" << Photon_PT[objects]*1000. << "," << Photon_Eta[objects] << "," << Photon_Phi[objects] << ";";
+						cout << "g," << Photon_PT[objects]*1000. << "," << Photon_Eta[objects] << "," << Photon_Phi[objects] << ";";
 					}
 			cout << endl;
 		}

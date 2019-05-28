@@ -10,7 +10,7 @@ nevents=1000000
 seed=0
 beamenergy = 13000.
 
-# Merging settings - don't do it for SUSY, it fails
+# Merging settings
 ickkw=1
 nJetMax=4
 xqcut=-1
@@ -21,6 +21,17 @@ gluino_mass = int(sys.argv[2])
 neutralino_mass = int(sys.argv[3])
 sim_real = str(sys.argv[4])
 name = event_number
+segfault = 0
+
+if event_number == "ew_final_states":
+    mgproc="""generate p p > ew ew @0
+add process p p > ew ew j@1
+add process p p > ew ew j j@2
+"""
+    name=event_number
+    nJetMax=2
+
+
 if event_number == "gluino_to_top":
     mgproc="""generate p p > go go @0
 add process p p > go go j@1
@@ -43,6 +54,8 @@ add process p p > t1 t1~ j j@2
 namefile = ""
 if event_number == "stop":
 	namefile = "stop"+str(gluino_mass)+"_neutralino"+str(neutralino_mass)+"_converted.dat"
+elif event_number == "ew_final_states":
+	namefile = "EWMSSM_benchmark_"+str(gluino_mass)+"_converted.dat"
 else:
 	namefile = str(sim_real)+"_gluino"+str(gluino_mass)+"_neu"+str(neutralino_mass)+"_converted.dat"
 
@@ -61,8 +74,7 @@ define ball = b b~
 define p = g u c d s b u~ c~ d~ s~ b~
 define j = g u c d s b u~ c~ d~ s~ b~
 import model MSSM_SLHA2
-define p = g u c d s b u~ c~ d~ s~ b~
-define j = g u c d s b u~ c~ d~ s~ b~
+define ew = n1 n2 n3 n4 x1+ x2+
 """+mgproc+"""
 output """+name)
 fcard.close()
@@ -79,6 +91,8 @@ delphes_card_ATLAS.dat
 
 """)
 fcard.close()
+if(segfault == True):
+	ickkw = 0
 fcard1 = open('run_card_modified.dat')
 fcard = open('run_card_modified_'+event_number+'.dat','w')
 for line in fcard1:
@@ -92,6 +106,8 @@ for line in fcard1:
 		fcard.write("     "+str(beamenergy/2.)+"     = ebeam2  ! beam 2 total energy in GeV \n")
 	elif "ickkw            ! 0 no matching, 1 MLM" in line:
 		fcard.write(" "+str(ickkw)+" = ickkw            ! 0 no matching, 1 MLM \n")
+	elif "xqcut   ! minimum kt jet measure between partons" in line:
+		fcard.write(" "+str(xqcut)+"   = xqcut   ! minimum kt jet measure between partons\n")
 	else:
 		fcard.write(line)
 fcard.close()
@@ -104,6 +120,8 @@ for line in fcard1:
 		fcard.write("Main:numberOfEvents      = "+str(nevents)+"\n")	
 	elif "JetMatching:nJetMax" in line:
 		fcard.write("JetMatching:nJetMax  		 = "+str(nJetMax)+"\n")
+	elif "partonlevel:mpi = off" in line:
+		fcard.write("partonlevel:mpi = off\n")
 	else:
 		fcard.write(line)
 fcard.close()
